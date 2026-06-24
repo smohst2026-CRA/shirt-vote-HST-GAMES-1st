@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>แอดมิน — โหวตเสื้อ HST</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#F5F5F7;--card:#FFFFFF;--text:#1D1D1F;--text-2:#6E6E73;
+    --hairline:rgba(0,0,0,.08);
+    --pink:#FF375F;--blue:#0A84FF;--green:#34C759;--amber:#FF9F0A;
+    --shadow:0 8px 30px rgba(0,0,0,.08);
+    --radius:20px;--radius-sm:14px;--accent:var(--pink);
+  }
+  [data-theme="dark"]{--bg:#000;--card:#1C1C1E;--text:#F5F5F7;--text-2:#98989D;
+    --hairline:rgba(255,255,255,.12);--shadow:0 8px 30px rgba(0,0,0,.5);}
+
+  /* ปุ่มสลับธีม สว่าง/มืด */
+  .theme-toggle{position:fixed;top:14px;right:14px;z-index:60;width:42px;height:42px;border-radius:50%;
+    border:none;cursor:pointer;background:var(--card);color:var(--text);box-shadow:var(--shadow);
+    display:flex;align-items:center;justify-content:center;transition:transform .2s,background .25s,color .25s;}
+  .theme-toggle:active{transform:scale(.9);}
+  .theme-toggle svg{width:21px;height:21px;}
+  .theme-toggle .moon{display:none;}
+  [data-theme="dark"] .theme-toggle .moon{display:block;}
+  [data-theme="dark"] .theme-toggle .sun{display:none;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--text);line-height:1.5;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","IBM Plex Sans Thai",sans-serif;
+    -webkit-font-smoothing:antialiased;padding-bottom:40px;}
+  .wrap{max-width:620px;margin:0 auto;padding:0 16px;}
+  header{text-align:center;padding:28px 16px 6px;}
+  header .eyebrow{font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.3px;margin:0 0 6px;}
+  header h1{font-size:28px;font-weight:700;letter-spacing:-.5px;margin:0;}
+
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 16px;margin-top:16px;}
+  label{display:block;font-size:14px;font-weight:600;margin:0 0 8px;}
+  input{width:100%;font-family:inherit;font-size:16px;padding:13px 15px;border-radius:var(--radius-sm);
+    border:1px solid var(--hairline);background:var(--bg);color:var(--text);outline:none;transition:border-color .2s;}
+  input:focus{border-color:var(--accent);background:var(--card);}
+  .btn{width:100%;border:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:600;color:#fff;
+    background:var(--accent);padding:14px;border-radius:999px;margin-top:14px;transition:transform .2s,opacity .2s;}
+  .btn:active{transform:scale(.97);opacity:.9;}
+  .btn:disabled{opacity:.45;}
+  .btn.blue{background:var(--blue);}
+  .btn.green{background:var(--green);}
+  .btn.ghost{background:transparent;color:var(--accent);}
+
+  .msg{margin-top:12px;border-radius:var(--radius-sm);padding:12px 14px;font-size:14px;font-weight:500;display:none;}
+  .msg.show{display:block;}
+  .msg.ok{background:rgba(52,199,89,.14);color:var(--green);}
+  .msg.err{background:rgba(255,55,95,.12);color:var(--pink);}
+
+  .hidden{display:none;}
+
+  /* KPI */
+  .kpis{display:flex;gap:12px;margin-top:16px;}
+  .kpi{flex:1;background:var(--card);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:16px;text-align:center;}
+  .kpi .num{font-size:30px;font-weight:700;letter-spacing:-.5px;}
+  .kpi .lbl{font-size:12.5px;color:var(--text-2);font-weight:500;margin-top:2px;}
+  .kpi.dup .num{color:var(--amber);}
+
+  .sect-title{font-size:18px;font-weight:700;margin:24px 4px 0;}
+  .pill-status{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;
+    padding:5px 12px;border-radius:999px;}
+  .pill-status.open{background:rgba(52,199,89,.14);color:var(--green);}
+  .pill-status.closed{background:rgba(255,55,95,.12);color:var(--pink);}
+  .pill-status .dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+
+  .row2{display:flex;gap:12px;}
+  .row2 > div{flex:1;}
+  .switch-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+
+  /* Table */
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px;}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--hairline);}
+  th{font-size:12px;color:var(--text-2);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+  td.mono{font-variant-numeric:tabular-nums;letter-spacing:.5px;}
+  tr.dup td{background:rgba(255,159,10,.12);}
+  .badge{font-size:11px;font-weight:700;color:#fff;background:var(--amber);padding:2px 8px;border-radius:999px;}
+  .tools{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap;}
+  .search{flex:1;min-width:160px;}
+  .search input{padding:10px 14px;font-size:14px;}
+  .spinner{width:24px;height:24px;border-radius:50%;border:3px solid var(--hairline);
+    border-top-color:var(--accent);animation:spin .8s linear infinite;margin:24px auto;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .muted{color:var(--text-2);text-align:center;padding:20px;font-size:14px;}
+</style>
+<script>
+  (function(){
+    try{
+      var t = localStorage.getItem('hst_theme');
+      if(!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    }catch(e){ document.documentElement.setAttribute('data-theme','light'); }
+  })();
+  function toggleTheme(){
+    var cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', cur);
+    try{ localStorage.setItem('hst_theme', cur); }catch(e){}
+  }
+</script>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="สลับธีมสว่าง/มืด" title="สลับธีมสว่าง/มืด">
+  <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+<header>
+  <p class="eyebrow">HST Sports</p>
+  <h1>แผงควบคุมแอดมิน</h1>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== Login ===== -->
+  <div id="loginCard" class="card">
+    <label for="pw">รหัสผ่านแอดมิน</label>
+    <input id="pw" type="password" placeholder="กรอกรหัสผ่าน" onkeydown="if(event.key==='Enter')login()" />
+    <button class="btn" id="loginBtn" onclick="login()">เข้าสู่ระบบ</button>
+    <div class="msg err" id="loginMsg"></div>
+  </div>
+
+  <!-- ===== Dashboard ===== -->
+  <div id="dash" class="hidden">
+
+    <div class="kpis">
+      <div class="kpi"><div class="num" id="kTotal">–</div><div class="lbl">โหวตทั้งหมด</div></div>
+      <div class="kpi"><div class="num" id="kUnique">–</div><div class="lbl">รหัสไม่ซ้ำ</div></div>
+      <div class="kpi dup"><div class="num" id="kDup">–</div><div class="lbl">รหัสซ้ำ</div></div>
+    </div>
+
+    <!-- ควบคุมการโหวต -->
+    <div class="sect-title">ควบคุมการรับโหวต</div>
+    <div class="card">
+      <div class="switch-row">
+        <div>
+          <div style="font-weight:600;">สถานะปัจจุบัน</div>
+          <div id="statusLine" style="margin-top:6px;"></div>
+        </div>
+        <button class="btn" id="toggleBtn" style="width:auto;margin:0;padding:11px 20px;" onclick="toggleVoting()">–</button>
+      </div>
+
+      <div style="margin-top:18px;" class="row2">
+        <div>
+          <label for="openT">เวลาเปิด</label>
+          <input id="openT" type="datetime-local" />
+        </div>
+        <div>
+          <label for="closeT">เวลาปิด</label>
+          <input id="closeT" type="datetime-local" />
+        </div>
+      </div>
+      <p style="font-size:12.5px;color:var(--text-2);margin:8px 2px 0;">เว้นว่างได้หากไม่ต้องการจำกัดเวลา • ระบบใช้เวลาฝั่งเซิร์ฟเวอร์ตัดสิน</p>
+      <button class="btn blue" onclick="saveConfig()">บันทึกการตั้งค่าเวลา</button>
+      <div class="msg" id="cfgMsg"></div>
+    </div>
+
+    <!-- รายชื่อผู้โหวต -->
+    <div class="sect-title">รหัสที่โหวตแล้ว</div>
+    <div class="card">
+      <div class="tools">
+        <div class="search"><input id="search" placeholder="ค้นหารหัส…" oninput="renderVoters()" /></div>
+        <button class="btn ghost" style="width:auto;margin:0;padding:10px 16px;" onclick="loadVoters()">รีเฟรช</button>
+        <button class="btn ghost" style="width:auto;margin:0;padding:10px 16px;" onclick="exportCSV()">ส่งออก CSV</button>
+      </div>
+      <div id="votersBox"><div class="spinner"></div></div>
+      <button class="btn" id="resetBtn" style="background:transparent;color:var(--pink);box-shadow:none;border:1px solid var(--pink);" onclick="resetVotes()">รีเซ็ตผลโหวตทั้งหมด</button>
+      <p style="font-size:12.5px;color:var(--text-2);margin:8px 2px 0;text-align:center;">ระบบจะดาวน์โหลดไฟล์สำรอง (CSV) ให้อัตโนมัติก่อนลบ • ลบผลโหวตถาวรแล้วทุกรหัสโหวตใหม่ได้ • แบบเสื้อและการตั้งค่าไม่ถูกลบ</p>
+      <div class="msg" id="resetMsg"></div>
+    </div>
+
+    <button class="btn ghost" onclick="logout()" style="margin-top:20px;">ออกจากระบบ</button>
+  </div>
+
+</div>
+
+<script>
+/* ===== ตั้งค่า: วางลิงก์ Web App (ลงท้าย /exec) ===== */
+var API_URL = "https://script.google.com/macros/s/AKfycbxCOQClzfur_p7f3T7mZZ6izH0VmUSAUjDNX6UgzLjbo0Rzb7B6N4b-qhUDsDnVTG0/exec";
+
+var adminPw = "";
+var configCache = null;
+var votersCache = [];
+
+function el(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function api(action, params){
+  params = params || {};
+  if(action === 'setConfig' || action === 'resetVotes'){
+    return fetch(API_URL, {method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(Object.assign({action:action}, params))}).then(function(r){return r.json();});
+  }
+  var qs = Object.keys(params).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(params[k]);}).join('&');
+  return fetch(API_URL+'?action='+action+(qs?'&'+qs:'')).then(function(r){return r.json();});
+}
+function showMsg(id,text,kind){var m=el(id);m.textContent=text;m.className='msg show '+(kind||'err');}
+
+/* ===== Login: ตรวจรหัสด้วยการเรียก getVoters (server เป็นคนตรวจ) ===== */
+function login(){
+  var pw = el('pw').value;
+  if(!pw){ showMsg('loginMsg','กรุณากรอกรหัสผ่าน','err'); return; }
+  var btn = el('loginBtn'); btn.disabled=true; btn.textContent='กำลังตรวจสอบ…';
+  api('getVoters', {password: pw}).then(function(res){
+    btn.disabled=false; btn.textContent='เข้าสู่ระบบ';
+    if(res && res.ok){
+      adminPw = pw;
+      el('loginCard').classList.add('hidden');
+      el('dash').classList.remove('hidden');
+      applyVoters(res);
+      loadConfig();
+    }else{
+      showMsg('loginMsg',(res && res.message) || 'รหัสผ่านไม่ถูกต้อง','err');
+    }
+  }).catch(function(){
+    btn.disabled=false; btn.textContent='เข้าสู่ระบบ';
+    showMsg('loginMsg','เชื่อมต่อไม่สำเร็จ ตรวจสอบลิงก์ API','err');
+  });
+}
+function logout(){ adminPw=""; location.reload(); }
+
+/* ===== Config ===== */
+function loadConfig(){
+  api('getConfig').then(function(res){
+    configCache = res;
+    renderStatus();
+    if(res.open_time) el('openT').value = res.open_time.slice(0,16);
+    if(res.close_time) el('closeT').value = res.close_time.slice(0,16);
+  });
+}
+function renderStatus(){
+  var open = configCache && configCache.is_open;
+  el('statusLine').innerHTML = open
+    ? '<span class="pill-status open"><span class="dot"></span>กำลังเปิดรับโหวต</span>'
+    : '<span class="pill-status closed"><span class="dot"></span>ปิดรับโหวต</span>';
+  var tb = el('toggleBtn');
+  var isOpenStatus = configCache && configCache.voting_status === 'open';
+  tb.textContent = isOpenStatus ? 'ปิดรับโหวต' : 'เปิดรับโหวต';
+  tb.className = 'btn ' + (isOpenStatus ? '' : 'green');
+  tb.style.width='auto'; tb.style.margin='0'; tb.style.padding='11px 20px';
+}
+function toggleVoting(){
+  var next = (configCache && configCache.voting_status === 'open') ? 'closed' : 'open';
+  api('setConfig', {password:adminPw, voting_status:next}).then(function(res){
+    if(res && res.ok){ configCache=res; renderStatus(); showMsg('cfgMsg','อัปเดตสถานะแล้ว','ok'); }
+    else showMsg('cfgMsg',(res&&res.message)||'บันทึกไม่สำเร็จ','err');
+  });
+}
+function saveConfig(){
+  var o = el('openT').value;   // '' หรือ 'YYYY-MM-DDTHH:mm'
+  var c = el('closeT').value;
+  api('setConfig', {password:adminPw, open_time:o, close_time:c}).then(function(res){
+    if(res && res.ok){ configCache=res; renderStatus(); showMsg('cfgMsg','บันทึกเวลาเรียบร้อย','ok'); }
+    else showMsg('cfgMsg',(res&&res.message)||'บันทึกไม่สำเร็จ','err');
+  });
+}
+
+/* ===== Voters ===== */
+function loadVoters(){
+  el('votersBox').innerHTML = '<div class="spinner"></div>';
+  api('getVoters', {password:adminPw}).then(function(res){
+    if(res && res.ok) applyVoters(res);
+    else el('votersBox').innerHTML = '<div class="muted">โหลดไม่สำเร็จ</div>';
+  });
+}
+function applyVoters(res){
+  votersCache = res.voters || [];
+  el('kTotal').textContent  = res.total || 0;
+  el('kUnique').textContent = res.unique || 0;
+  el('kDup').textContent    = (res.total||0) - (res.unique||0);
+  renderVoters();
+}
+function renderVoters(){
+  var q = (el('search').value||'').trim();
+  var list = votersCache;
+  if(q) list = list.filter(function(v){return v.student_id.indexOf(q)!==-1;});
+  if(!list.length){ el('votersBox').innerHTML = '<div class="muted">ยังไม่มีข้อมูล</div>'; return; }
+
+  var rows = list.map(function(v){
+    return '<tr class="'+(v.duplicate?'dup':'')+'">'+
+      '<td class="mono">'+esc(v.student_id)+(v.duplicate?' <span class="badge">ซ้ำ</span>':'')+'</td>'+
+      '<td>'+esc(v.design_id)+'</td>'+
+      '<td class="mono">'+esc((v.timestamp||'').replace('T',' '))+'</td>'+
+    '</tr>';
+  }).join('');
+  el('votersBox').innerHTML =
+    '<table><thead><tr><th>รหัสนักศึกษา</th><th>แบบ</th><th>เวลา</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+function resetVotes(){
+  if(!confirm('ยืนยันลบผลโหวตทั้งหมด?\nระบบจะดาวน์โหลดไฟล์สำรองให้ก่อน • การลบย้อนกลับไม่ได้')) return;
+  if(!confirm('แน่ใจอีกครั้ง — ผลโหวตทั้งหมดจะถูกลบถาวร')) return;
+
+  // สำรองผลโหวตอัตโนมัติก่อนลบ
+  var btn = el('resetBtn'); btn.disabled=true; btn.textContent='กำลังสำรองข้อมูล…';
+  if(votersCache.length){
+    exportCSV(true);
+    showMsg('resetMsg','ดาวน์โหลดไฟล์สำรองแล้ว กำลังรีเซ็ต…','ok');
+  }
+
+  btn.textContent='กำลังรีเซ็ต…';
+  api('resetVotes', {password:adminPw}).then(function(res){
+    btn.disabled=false; btn.textContent='รีเซ็ตผลโหวตทั้งหมด';
+    if(res && res.ok){ showMsg('resetMsg', res.message || 'รีเซ็ตเรียบร้อย', 'ok'); loadVoters(); }
+    else showMsg('resetMsg', (res&&res.message)||'รีเซ็ตไม่สำเร็จ', 'err');
+  }).catch(function(){
+    btn.disabled=false; btn.textContent='รีเซ็ตผลโหวตทั้งหมด';
+    showMsg('resetMsg','เชื่อมต่อไม่สำเร็จ','err');
+  });
+}
+function exportCSV(isBackup){
+  var head = 'student_id,design_id,timestamp,duplicate\n';
+  var body = votersCache.map(function(v){
+    return [v.student_id, v.design_id, v.timestamp, v.duplicate?'1':'0'].join(',');
+  }).join('\n');
+  var blob = new Blob(["﻿"+head+body], {type:'text/csv;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  var d = new Date();
+  function p(n){return (n<10?'0':'')+n;}
+  var stamp = d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
+  a.download = (isBackup===true ? 'hst_votes_backup_' : 'hst_voters_') + stamp + '.csv';
+  a.click();
+}
+</script>
+</body>
+</html>
