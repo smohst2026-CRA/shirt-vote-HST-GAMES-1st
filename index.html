@@ -120,14 +120,14 @@
     padding:18px 16px;margin-top:18px;
   }
   .form label{display:block;font-size:14px;font-weight:600;margin:0 0 8px;}
-  .form input[type=tel]{
+  .form input.field{
     width:100%;font-size:18px;font-family:inherit;
     padding:14px 16px;border-radius:var(--radius-sm);
     border:1px solid var(--hairline);background:var(--bg);color:var(--text);
     outline:none;transition:border-color .2s ease-out,background .2s ease-out;
-    letter-spacing:2px;text-align:center;
+    text-align:center;
   }
-  .form input[type=tel]:focus{border-color:var(--accent);background:var(--card);}
+  .form input.field:focus{border-color:var(--accent);background:var(--card);}
   .hint{font-size:12.5px;color:var(--text-2);margin:8px 2px 0;text-align:center;}
 
   .btn{
@@ -255,9 +255,9 @@
 
 <header class="app">
   <img class="logo" src="logo.png.jpg" alt="โลโก้สโมสรนักศึกษา" onerror="this.style.display='none'">
-  <p class="eyebrow">HST Games 1st</p>
+  <p class="eyebrow">HST Sports</p>
   <h1 id="appTitle">โหวตแบบเสื้อกีฬา</h1>
-  <p class="sub">เลือกแบบที่ชอบที่สุด 1 แบบ 1 คน 1 สิทธิ์</p>
+  <p class="sub">เลือกแบบที่ชอบที่สุด 1 แบบ</p>
 </header>
 
 <div class="wrap">
@@ -397,10 +397,9 @@ function renderDesigns(){
   // ฟอร์มกรอกรหัส
   html +=
     '<div class="form">'+
-      '<label for="sid">รหัสนักศึกษา</label>'+
-      '<input id="sid" type="tel" inputmode="numeric" maxlength="7" placeholder="0000000" '+
-        'oninput="this.value=this.value.replace(/\\D/g,\'\').slice(0,7)">'+
-      '<p class="hint">ตัวเลข 7 หลัก • 1 รหัสโหวตได้ครั้งเดียว</p>'+
+      '<label for="vname">ชื่อ-สกุล</label>'+
+      '<input id="vname" class="field" type="text" maxlength="60" placeholder="เช่น สมชาย ใจดี" autocomplete="off">'+
+      '<p class="hint">กรอกชื่อและนามสกุลจริง • 1 ชื่อโหวตได้ครั้งเดียว<br>ผลโหวตเป็นความลับ ไม่มีใครเห็นว่าคุณเลือกแบบใด</p>'+
       '<button class="btn" id="submitBtn" onclick="doSubmit()"'+(open?'':' disabled')+'>'+
         (open?'ส่งโหวต':'ปิดรับการโหวต')+'</button>'+
       '<div class="msg" id="voteMsg"></div>'+
@@ -425,14 +424,16 @@ function showMsg(text, kind){
 }
 
 function doSubmit(){
-  var sid = (el('sid').value || '').trim();
+  var name = (el('vname').value || '').trim().replace(/\s+/g,' ');
   if(!selectedDesign){ showMsg('กรุณาเลือกแบบเสื้อก่อน','err'); return; }
-  if(!/^\d{7}$/.test(sid)){ showMsg('รหัสนักศึกษาต้องเป็นตัวเลข 7 หลัก','err'); return; }
+  if(name.length < 4 || name.split(' ').length < 2 || /[0-9]/.test(name)){
+    showMsg('กรุณากรอกชื่อ-สกุลให้ครบ (เช่น สมชาย ใจดี)','err'); return;
+  }
 
   var btn = el('submitBtn');
   btn.disabled = true; btn.textContent = 'กำลังส่ง…';
 
-  api('submitVote', {student_id: sid, design_id: selectedDesign}).then(function(res){
+  api('submitVote', {voter_name: name, design_id: selectedDesign}).then(function(res){
     if(res && res.ok){
       showSuccess();
     }else{
