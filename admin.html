@@ -141,8 +141,8 @@
 
     <div class="kpis">
       <div class="kpi"><div class="num" id="kTotal">–</div><div class="lbl">โหวตทั้งหมด</div></div>
-      <div class="kpi"><div class="num" id="kUnique">–</div><div class="lbl">รหัสไม่ซ้ำ</div></div>
-      <div class="kpi dup"><div class="num" id="kDup">–</div><div class="lbl">รหัสซ้ำ</div></div>
+      <div class="kpi"><div class="num" id="kUnique">–</div><div class="lbl">ชื่อไม่ซ้ำ</div></div>
+      <div class="kpi dup"><div class="num" id="kDup">–</div><div class="lbl">ชื่อซ้ำ</div></div>
     </div>
 
     <!-- ควบคุมการโหวต -->
@@ -172,16 +172,17 @@
     </div>
 
     <!-- รายชื่อผู้โหวต -->
-    <div class="sect-title">รหัสที่โหวตแล้ว</div>
+    <div class="sect-title">รายชื่อที่โหวตแล้ว</div>
     <div class="card">
+      <p style="font-size:12.5px;color:var(--text-2);margin:0 2px 12px;">แสดงเฉพาะ “ใครโหวตแล้ว” เท่านั้น — ระบบบัตรลับ ไม่บันทึกว่าใครเลือกแบบใด</p>
       <div class="tools">
-        <div class="search"><input id="search" placeholder="ค้นหารหัส…" oninput="renderVoters()" /></div>
+        <div class="search"><input id="search" placeholder="ค้นหาชื่อ…" oninput="renderVoters()" /></div>
         <button class="btn ghost" style="width:auto;margin:0;padding:10px 16px;" onclick="loadVoters()">รีเฟรช</button>
         <button class="btn ghost" style="width:auto;margin:0;padding:10px 16px;" onclick="exportCSV()">ส่งออก CSV</button>
       </div>
       <div id="votersBox"><div class="spinner"></div></div>
       <button class="btn" id="resetBtn" style="background:transparent;color:var(--pink);box-shadow:none;border:1px solid var(--pink);" onclick="resetVotes()">รีเซ็ตผลโหวตทั้งหมด</button>
-      <p style="font-size:12.5px;color:var(--text-2);margin:8px 2px 0;text-align:center;">ระบบจะดาวน์โหลดไฟล์สำรอง (CSV) ให้อัตโนมัติก่อนลบ • ลบผลโหวตถาวรแล้วทุกรหัสโหวตใหม่ได้ • แบบเสื้อและการตั้งค่าไม่ถูกลบ</p>
+      <p style="font-size:12.5px;color:var(--text-2);margin:8px 2px 0;text-align:center;">ระบบจะดาวน์โหลดไฟล์สำรอง (CSV) ให้อัตโนมัติก่อนลบ • ลบผลโหวตถาวรแล้วทุกชื่อโหวตใหม่ได้ • แบบเสื้อและการตั้งค่าไม่ถูกลบ</p>
       <div class="msg" id="resetMsg"></div>
     </div>
 
@@ -288,20 +289,19 @@ function applyVoters(res){
   renderVoters();
 }
 function renderVoters(){
-  var q = (el('search').value||'').trim();
+  var q = (el('search').value||'').trim().toLowerCase();
   var list = votersCache;
-  if(q) list = list.filter(function(v){return v.student_id.indexOf(q)!==-1;});
+  if(q) list = list.filter(function(v){return (v.name||'').toLowerCase().indexOf(q)!==-1;});
   if(!list.length){ el('votersBox').innerHTML = '<div class="muted">ยังไม่มีข้อมูล</div>'; return; }
 
   var rows = list.map(function(v){
     return '<tr class="'+(v.duplicate?'dup':'')+'">'+
-      '<td class="mono">'+esc(v.student_id)+(v.duplicate?' <span class="badge">ซ้ำ</span>':'')+'</td>'+
-      '<td>'+esc(v.design_id)+'</td>'+
+      '<td>'+esc(v.name)+(v.duplicate?' <span class="badge">ซ้ำ</span>':'')+'</td>'+
       '<td class="mono">'+esc((v.timestamp||'').replace('T',' '))+'</td>'+
     '</tr>';
   }).join('');
   el('votersBox').innerHTML =
-    '<table><thead><tr><th>รหัสนักศึกษา</th><th>แบบ</th><th>เวลา</th></tr></thead><tbody>'+rows+'</tbody></table>';
+    '<table><thead><tr><th>ชื่อ-สกุล</th><th>เวลา</th></tr></thead><tbody>'+rows+'</tbody></table>';
 }
 function resetVotes(){
   if(!confirm('ยืนยันลบผลโหวตทั้งหมด?\nระบบจะดาวน์โหลดไฟล์สำรองให้ก่อน • การลบย้อนกลับไม่ได้')) return;
@@ -325,9 +325,9 @@ function resetVotes(){
   });
 }
 function exportCSV(isBackup){
-  var head = 'student_id,design_id,timestamp,duplicate\n';
+  var head = 'name,timestamp,duplicate\n';
   var body = votersCache.map(function(v){
-    return [v.student_id, v.design_id, v.timestamp, v.duplicate?'1':'0'].join(',');
+    return ['"'+String(v.name||'').replace(/"/g,'""')+'"', v.timestamp, v.duplicate?'1':'0'].join(',');
   }).join('\n');
   var blob = new Blob(["﻿"+head+body], {type:'text/csv;charset=utf-8'});
   var a = document.createElement('a');
