@@ -88,8 +88,9 @@
   .banner .dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none;}
 
   /* ============== Design cards ============== */
-  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:16px;}
-  @media (max-width:560px){ .grid{gap:8px;} }
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:16px;}
+  @media (max-width:900px){ .grid{grid-template-columns:repeat(4,1fr);gap:12px;} }
+  @media (max-width:560px){ .grid{grid-template-columns:repeat(3,1fr);gap:8px;} }
   .card{
     background:var(--card);border-radius:var(--radius);
     box-shadow:var(--shadow);overflow:hidden;
